@@ -1,5 +1,5 @@
-var Constants = require('./src/Constants');
-var ServerActions = require('./src/actions/ServerActionsSocketIO');
+var Constants = require('mht-zigbee-client').Constants;
+var ServerActions = require('mht-zigbee-client').ServerActionsSocketIO;
 var Fluxxor = require('fluxxor');
 
 var Store = Fluxxor.createStore({
@@ -59,10 +59,10 @@ var Store = Fluxxor.createStore({
       Constants.DEVICE_JOINED, this.onDeviceJoined,
       // Constants.DEVICE_LEFT, this.onDeviceLeft,
       // Constants.DEVICE_UPDATE, this.onDeviceUpdate,
-      // Constants.SERVER_SETTINGS, this.onServerSettings,
-      // Constants.GATEWAY_SETTINGS, this.onGatewaySettings,
-      // Constants.OTA_EVENTS, this.onOtaEventUpdate,
-      // Constants.OTA_AVAILABLE_FILES, this.otaFilesReceived,
+      // Constants.SERVER_SETTINGS, this.onmoduleServerSettings,
+      // Constants.GATEWAY_SETTINGS, this.omodulenGatewaySettings,
+      // Constants.OTA_EVENTS, this.onOtaEvmoduleentUpdate,
+      // Constants.OTA_AVAILABLE_FILES, thimodules.otaFilesReceived,
       // Constants.SERVER_LOG, this.loadServerLog,
       // Constants.GATEWAY_LOG, this.loadGatewayLog,
       // Constants.TRAFFIC_TEST_LOG, this.loadTrafficTestLog,

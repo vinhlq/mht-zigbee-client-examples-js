@@ -13,9 +13,13 @@
         "url": "https://mht.vn"
     },
     "scripts": {
-        "build": "rm -rf dist && babel src --out-dir dist --ignore ../lib/node_modules/*,dist/*"
+        "build": "rm -rf dist && babel src --out-dir dist --ignore node_modules/*,dist/*"
     },
     "dependencies": {
+        "circular-buffer": "^1.0.2",
+        "lodash": "^3.10.1",
+        "loglevel": "^1.6.1",
+        "@babel/runtime": "^7.4.3",
         "body-parser": "^1.19.0",
         "fluxxor": "^1.7.3",
         "mht-zigbee-client": "latest",
@@ -23,6 +27,22 @@
         "socket.io-client": "^2.2.0",
         "ws": "^7.0.0"
     },
-    "devDependencies": {},
+    "devDependencies": {
+        "@babel/cli": "^7.4.3",
+        "@babel/core": "^7.4.3",
+        "@babel/plugin-proposal-class-properties": "^7.4.0",
+        "@babel/plugin-proposal-export-namespace-from": "^7.2.0",
+        "@babel/plugin-proposal-function-sent": "^7.2.0",
+        "@babel/plugin-proposal-json-strings": "^7.2.0",
+        "@babel/plugin-proposal-numeric-separator": "^7.2.0",
+        "@babel/plugin-proposal-object-rest-spread": "^7.4.3",
+        "@babel/plugin-proposal-throw-expressions": "^7.2.0",
+        "@babel/plugin-syntax-dynamic-import": "^7.0.0",
+        "@babel/plugin-syntax-import-meta": "^7.2.0",
+        "@babel/plugin-transform-object-assign": "^7.2.0",
+        "@babel/plugin-transform-runtime": "^7.4.3",
+        "@babel/plugin-transform-typescript": "^7.4.0",
+        "@babel/preset-env": "^7.4.3"
+    },
     "license": "Apache-2.0"
 }

@@ -4,6 +4,7 @@
 *.cert
 *.pem
 *.old
+.env
 /**/dist
 /**/node_modules
 /**/config/*.json

@@ -1,6 +1,12 @@
 var io = require('socket.io-client');
 var readline = require('./utils/readline');
-socket = io.connect("http://localhost:9020");
+var socket = io.connect("http://localhost:9020");
+var tagPrint = require('./utils/tagprint');
+
+var Reset = tagPrint.Reset;
+var FgGreen = tagPrint.FgGreen;
+var FgRed = tagPrint.FgRed;
+tagPrint = tagPrint.print;
 
 socket.on('connect', function() {
   // console.log('Connected to SocketIO');
@@ -10,32 +16,6 @@ socket.on('connect', function() {
   // socket.emit('servermessage', {type:"getwebserverinfo"});
   // Flux.actions.getOtaFiles();
 })
-
-const Reset = "\x1b[0m"
-const FgGreen = "\x1b[32m"
-const FgRed = "\x1b[31m"
-
-function tagPrint(s, tag, color) {
-  let json = ''
-  let tagBegin = '';
-  let tagEnd = '';
-  color = color || '';
-
-  if(!s) {
-    json = '\n';
-  }
-  else if(typeof s === 'string') {
-    json = `\n${s}\n`;
-  }
-  else {
-    json = `\n${JSON.stringify(s)}\n`;
-  }
-  if(tag) {
-    tagBegin = `${color}<${tag}>${Reset}`;
-    tagEnd = `${color}</${tag}>${Reset}`;
-  }
-  console.info(`${tagBegin}${json}${tagEnd}`);
-}
 
 socket.on('devices', function(message) {
   if(message.devices.length > 0) {

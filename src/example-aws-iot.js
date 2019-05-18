@@ -248,11 +248,11 @@ var Store = Fluxxor.createStore({
 
     if(messageParsed.devices.length > 0) {
       messageParsed.devices.forEach(function(m) {
-        tagPrint(m, `devices-${m.nodeId}`, FgGreen);
+        tagPrint(m, `devices-${m.nodeId}-${messageParsed.io}`, FgGreen);
       });
     }
     else {
-      tagPrint('', `devices`, FgGreen);
+      tagPrint('', `devices-${messageParsed.io}`, FgGreen);
     }
   },
 
@@ -298,7 +298,7 @@ var Store = Fluxxor.createStore({
     this.heartbeat = info;
     this.emit('change');
 
-    tagPrint(info, `hertbeat`, FgGreen);
+    tagPrint(info, `hertbeat-${info.io}`, FgGreen);
   },
 
   onNetworkSecurityLevel: function(data) {
@@ -1260,13 +1260,13 @@ userInput()
     Flux.actions.getOtaFiles();
   });
 
-  // options = "http://localhost:9020";
-  // Flux.actions.connect('socket-io', options, function(){
-  //   console.log('Connected to SocketIO');
-  //   Flux.actions.getGatewayState();
-  //   Flux.actions.getWebserverState();
-  //   Flux.actions.getOtaFiles();
-  // });
+  options = "http://localhost:9020";
+  Flux.actions.connect('socket-io', options, function(){
+    console.log('Connected to SocketIO');
+    Flux.actions.getGatewayState();
+    Flux.actions.getWebserverState();
+    Flux.actions.getOtaFiles();
+  });
 
   // Flux.actions.enableCliTerminal();
 });

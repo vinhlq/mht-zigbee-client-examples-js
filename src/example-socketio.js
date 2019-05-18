@@ -1,9 +1,13 @@
 var _ = require('lodash');
 var CircularBuffer = require('circular-buffer');
-var Constants     = require('mht-zigbee-client').Constants;
+// var projRequire = require('./projRequire');
+// var Constants     = projRequire('../../').Constants;
+// var ServerActions = projRequire('../../').ServerActionsSocketIO;
+var Constants = require('mht-zigbee-client').Constants;
 var ServerActions = require('mht-zigbee-client').ServerActionsSocketIO;
 var nodeListBindableClusters = require('./DeviceConstants').nodeListBindableClusters;
 var Fluxxor       = require('fluxxor');
+var readline = require('./utils/readline');
 
 var Store = Fluxxor.createStore({
   initialize: function() {
@@ -1136,3 +1140,48 @@ Flux.actions.connect(ServerActions.name, "http://localhost:9020", function(){
 });
 
 Flux.actions.enableCliTerminal();
+
+var question =
+`Enter number:
+1: requestgatewaystate
+2: permitjoinZB3OpenNetworkOnly
+3: getwebserverinfo
+e: exit
+`;
+async function userInputNumber() {
+  const number = await readline(question);
+  return number;
+}
+
+(async () => {
+  try {
+    for(let exit=false;!exit;) {
+      const number = await userInputNumber();
+
+      // console.info(`Value: ${number}`);
+      switch(number) {
+        case '1':
+          Flux.actions.getGatewayState('');
+          break;
+        case '2':
+          Flux.actions.gatewayPermitJoiningZB3OpenNetworkOnly('', 255);
+          break;
+        case '3':
+          Flux.actions.getWebserverState('');
+          break;
+        case '4':
+          Flux.actions.createRule('', inDeviceInfo, outDeviceInfo);
+          break;
+        case 'x':
+          // socket.emit('action', {type:"permitjoinZB3", deviceEui: deviceEui, installCode: installCode, delayMs: delayMs});
+          break;
+        case 'e':
+          socket.close();
+          exit = true;
+          break;
+      }
+    }
+  } catch (e) {
+    throw e
+}
+})();

@@ -3,7 +3,10 @@ global.URL = require('url').URL;
 global.WebSocket = require('ws');
 // global.navigator = require('navigator');
 // global.navigator = {};
-var Constants     = require('mht-zigbee-client').Constants;
+// var projRequire = require('./projRequire');
+// var Constants     = projRequire('../../').Constants;
+// var ServerActions = projRequire('../../').ServerActionsAwsIot;
+var Constants = require('mht-zigbee-client').Constants;
 var ServerActions = require('mht-zigbee-client').ServerActionsAwsIot;
 var _ = require('lodash');
 var CircularBuffer = require('circular-buffer');
@@ -1251,19 +1254,19 @@ userInput()
     gatewayEui: "000B57FFFE51B5A5"
   }
   Flux.actions.connect(ServerActions.name, options, function(){
-    console.log('Connected to SocketIO');
+    console.log('Connected to AwsIot');
     Flux.actions.getGatewayState();
     Flux.actions.getWebserverState();
     Flux.actions.getOtaFiles();
   });
 
-  options = "http://localhost:9020";
-  Flux.actions.connect('socket-io', options, function(){
-    console.log('Connected to SocketIO');
-    Flux.actions.getGatewayState();
-    Flux.actions.getWebserverState();
-    Flux.actions.getOtaFiles();
-  });
+  // options = "http://localhost:9020";
+  // Flux.actions.connect('socket-io', options, function(){
+  //   console.log('Connected to SocketIO');
+  //   Flux.actions.getGatewayState();
+  //   Flux.actions.getWebserverState();
+  //   Flux.actions.getOtaFiles();
+  // });
 
   // Flux.actions.enableCliTerminal();
 });

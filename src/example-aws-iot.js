@@ -3,11 +3,13 @@ global.URL = require('url').URL;
 global.WebSocket = require('ws');
 // global.navigator = require('navigator');
 // global.navigator = {};
+
 // var projRequire = require('./projRequire');
 // var Constants     = projRequire('../../').Constants;
 // var ServerActions = projRequire('../../').ServerActionsAwsIot;
 var Constants = require('mht-zigbee-client').Constants;
 var ServerActions = require('mht-zigbee-client').ServerActionsAwsIot;
+
 var _ = require('lodash');
 var CircularBuffer = require('circular-buffer');
 var readline = require('./utils/readline');
@@ -1269,4 +1271,44 @@ userInput()
   });
 
   // Flux.actions.enableCliTerminal();
+
+  var question =
+  `Enter number:
+  1: requestgatewaystate
+  2: permitjoinZB3OpenNetworkOnly
+  3: getwebserverinfo
+  e: exit
+  `;
+  async function userInputNumber() {
+    const number = await readline(question);
+    return number;
+  }
+
+  async function userShell() {
+    number =  await userInputNumber()
+      // console.info(`Value: ${number}`);
+    switch(number) {
+      case '1':
+        Flux.actions.getGatewayState('');
+        break;
+      case '2':
+        Flux.actions.gatewayPermitJoiningZB3OpenNetworkOnly('', 255);
+        break;
+      case '3':
+        Flux.actions.getWebserverState('');
+        break;
+      case '4':
+        Flux.actions.createRule('', inDeviceInfo, outDeviceInfo);
+        break;
+      case 'x':
+        // socket.emit('action', {type:"permitjoinZB3", deviceEui: deviceEui, installCode: installCode, delayMs: delayMs});
+        break;
+      case 'e':
+        // Flux.actions.close();
+        process.exit();
+        return;
+    }
+    process.nextTick(userShell);
+  }
+  userShell()
 });

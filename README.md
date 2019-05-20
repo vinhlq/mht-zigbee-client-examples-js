@@ -4,11 +4,14 @@
 
 ## Cấu trúc
 
-* Devices list
-  * [ ] [list-flux.js](list-flux.js)
-  * [ ] [list-redux.js](list-flux.js)
+* Example
+  * [x] [cmd-socket-io.js](src/cmd-socket-io.js)
+    * monitor tool
+  * [x] [example-socketio.js](src/example-socketio.js)
+    * ServerActions use socket.io
+  * [x] [example-aws-iot.js](src/example-aws-iot.js)
+    * ServerActions use aws-iot-device-sdk
+  * [ ] [example-aws-iot-amplify.js](src/example-aws-iot-amplify.js)
+    * ServerActions use aws-amplify
 
 ## TODO
-
-* Devices control
-* Alow device joining

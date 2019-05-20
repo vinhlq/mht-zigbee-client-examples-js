@@ -25,7 +25,13 @@
         "mht-zigbee-client": "latest",
         "socket.io": "^2.2.0",
         "socket.io-client": "^2.2.0",
-        "ws": "^7.0.0"
+        "ws": "^3.3.1",
+        "node-fetch": "^2.5.0",
+        "aws-sdk": "^2.454.0",
+        "aws-amplify": "^1.1.27",
+        "navigator": "^1.0.1",
+        "amazon-cognito-identity-js": "^3.0.12",
+        "aws-iot-device-sdk": "^2.2.1"
     },
     "devDependencies": {
         "@babel/cli": "^7.4.3",

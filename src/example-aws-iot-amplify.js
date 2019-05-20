@@ -1,9 +1,75 @@
+global.fetch = require('node-fetch');
+global.URL = require('url').URL;
+global.WebSocket = require('ws');
+global.navigator = require('navigator');
+const AWS = require('aws-sdk');
+const secretsManager = new AWS.SecretsManager();
+const secret = secretsManager.getSecretValue({ SecretId: 'my-secret' })
+// global.navigator = {};
 var _ = require('lodash');
 var CircularBuffer = require('circular-buffer');
-var Constants     = require('mht-zigbee-client').Constants;
-var ServerActions = require('mht-zigbee-client').ServerActionsSocketIO;
+var Constants     = require('./src').Constants;
+var ServerActions = require('./src').ServerActionsAwsIot;
 var nodeListBindableClusters = require('./DeviceConstants').nodeListBindableClusters;
 var Fluxxor       = require('fluxxor');
+
+var Amplify = require('aws-amplify').default;
+var Auth = require('aws-amplify').Auth;
+// const AWSIoTProvider = require('aws-amplify').PubSub.lib.Providers.AWSIoTProvider;
+
+// var Amplify = require('@aws-amplify/core').default;
+// var Auth = require('@aws-amplify/auth').default;
+// const PubSub = require('@aws-amplify/pubsub').default;
+var AWSIoTProvider = require('@aws-amplify/pubsub/lib/Providers').AWSIoTProvider;
+// var Logger = require('aws-amplify').default;
+var readline = require('./utils/readline');
+
+// Auth.configure({
+//   mandatorySignIn: true,
+//   // mandatorySignIn: false,
+//   region: process.env.AWS_REGION,
+//   userPoolId: process.env.AWS_COGNITO_USERPOOL_ID,
+//   identityPoolRegion: process.env.AWS_REGION,
+//   identityPoolId: process.env.AWS_COGNITO_USERPOOL_IDENTITY_ID,
+//   userPoolWebClientId: process.env.AWS_COGNITO_USERPOOL_CLIENT_ID
+// });
+
+// PubSub.configure({
+//   aws_pubsub_region: process.env.AWS_REGION,
+//   aws_pubsub_endpoint: `wss://${process.env.AWS_IOT_ENDPOINT}`
+// });
+
+Amplify.configure({
+  Auth: {
+      mandatorySignIn: true,
+      // mandatorySignIn: false,
+      region: process.env.AWS_REGION,
+      userPoolId: process.env.AWS_COGNITO_USERPOOL_ID,
+      identityPoolRegion: process.env.AWS_REGION,
+      identityPoolId: process.env.AWS_COGNITO_USERPOOL_IDENTITY_ID,
+      userPoolWebClientId: process.env.AWS_COGNITO_USERPOOL_CLIENT_ID
+  },
+
+  PubSub: {
+    aws_pubsub_region: process.env.AWS_REGION,
+    aws_pubsub_endpoint: `wss://${process.env.AWS_IOT_ENDPOINT}`
+  }
+});
+
+// Amplify.addPluggable(new AWSIoTProvider({
+//   aws_pubsub_region: process.env.AWS_REGION,
+//   aws_pubsub_endpoint: `wss://${process.env.AWS_IOT_ENDPOINT}`,
+// }));
+
+
+
+Amplify.Logger.LOG_LEVEL = 'DEBUG';
+
+async function userInput() {
+  const username = await readline("Username: ");
+  const password = await readline("Password: ");
+  return { username, password };
+}
 
 var Store = Fluxxor.createStore({
   initialize: function() {
@@ -57,23 +123,23 @@ var Store = Fluxxor.createStore({
 
     this.bindActions(
       Constants.DEVICE_LIST_UPDATED, this.onDeviceListUpdated,
-      Constants.RULES_LIST_UPDATED, this.onRulesListUpdated,
-      Constants.DEVICE_JOINED, this.onDeviceJoined,
-      Constants.DEVICE_LEFT, this.onDeviceLeft,
-      Constants.DEVICE_UPDATE, this.onDeviceUpdate,
-      Constants.SERVER_SETTINGS, this.onServerSettings,
-      Constants.GATEWAY_SETTINGS, this.onGatewaySettings,
-      Constants.OTA_EVENTS, this.onOtaEventUpdate,
-      Constants.OTA_AVAILABLE_FILES, this.otaFilesReceived,
-      Constants.SERVER_LOG, this.loadServerLog,
-      Constants.GATEWAY_LOG, this.loadGatewayLog,
-      Constants.TRAFFIC_TEST_LOG, this.loadTrafficTestLog,
-      Constants.TRAFFIC_TEST_RESULTS, this.onTrafficTestResults,
-      Constants.HEARTBEAT, this.onHeartbeat,
-      Constants.NETWORK_SECURITY_LEVEL, this.onNetworkSecurityLevel,
-      Constants.SERVER_LOG_STREAM, this.updateServerLogStream,
-      Constants.GATEWAY_LOG_STREAM, this.updateGatewayLogStream,
-      Constants.INSTALL_COLLECTION, this.updateInstallCodeFromServer
+      // Constants.RULES_LIST_UPDATED, this.onRulesListUpdated,
+      // Constants.DEVICE_JOINED, this.onDeviceJoined,
+      // Constants.DEVICE_LEFT, this.onDeviceLeft,
+      // Constants.DEVICE_UPDATE, this.onDeviceUpdate,
+      // Constants.SERVER_SETTINGS, this.onServerSettings,
+      // Constants.GATEWAY_SETTINGS, this.onGatewaySettings,
+      // Constants.OTA_EVENTS, this.onOtaEventUpdate,
+      // Constants.OTA_AVAILABLE_FILES, this.otaFilesReceived,
+      // Constants.SERVER_LOG, this.loadServerLog,
+      // Constants.GATEWAY_LOG, this.loadGatewayLog,
+      // Constants.TRAFFIC_TEST_LOG, this.loadTrafficTestLog,
+      // Constants.TRAFFIC_TEST_RESULTS, this.onTrafficTestResults,
+      // Constants.HEARTBEAT, this.onHeartbeat,
+      // Constants.NETWORK_SECURITY_LEVEL, this.onNetworkSecurityLevel,
+      // Constants.SERVER_LOG_STREAM, this.updateServerLogStream,
+      // Constants.GATEWAY_LOG_STREAM, this.updateGatewayLogStream,
+      // Constants.INSTALL_COLLECTION, this.updateInstallCodeFromServer
     );
   },
 
@@ -156,7 +222,7 @@ var Store = Fluxxor.createStore({
     this.devices = _.map(this.devices, function(deviceInList) {
       //If device is in list
       if ((deviceInList.deviceEndpoint.eui64 === messageParsed.deviceEndpoint.eui64) &&
-         (deviceInList.deviceEndpoint.endpoint === messageParsed.deviceEndpoint.endpoint)) {
+        (deviceInList.deviceEndpoint.endpoint === messageParsed.deviceEndpoint.endpoint)) {
         messageParsed.isIdentifyServerClusterDetected = deviceInList.isIdentifyServerClusterDetected;
         deviceInList = messageParsed;
         return deviceInList;
@@ -213,11 +279,11 @@ var Store = Fluxxor.createStore({
 
   onOtaEventUpdate: function(otaEvent) {
     if (otaEvent.messageType &&
-       (otaEvent.messageType === 'otaFinished' ||
+      (otaEvent.messageType === 'otaFinished' ||
         otaEvent.messageType === 'otaFailed')) {
       this.resetOtaProgress();
     } else if (otaEvent.messageType &&
-               otaEvent.messageType === 'otaBlockSent') {
+              otaEvent.messageType === 'otaBlockSent') {
       this.stopOtaWaitingCountdown();
     }
     this.emit('change');
@@ -317,7 +383,7 @@ var Store = Fluxxor.createStore({
         addingDevice === true &&
         addingDeviceProgress > 0) {
       this.addingDeviceTimer = setInterval(this.addingDeviceTimerCountDown.bind(this),
-                                           1000);
+                                          1000);
     }
   },
 
@@ -555,9 +621,9 @@ var Store = Fluxxor.createStore({
 
     var rulesList = rules.map(function(rule) {
       if (inputNode.deviceEndpoint.eui64 === rule.fromData.deviceEndpoint.eui64 &&
-           inputNode.deviceEndpoint.endpoint === rule.fromData.deviceEndpoint.endpoint &&
-           outputNode.deviceEndpoint.eui64 === rule.toData.deviceEndpoint.eui64 &&
-           outputNode.deviceEndpoint.endpoint === rule.toData.deviceEndpoint.endpoint) {
+          inputNode.deviceEndpoint.endpoint === rule.fromData.deviceEndpoint.endpoint &&
+          outputNode.deviceEndpoint.eui64 === rule.toData.deviceEndpoint.eui64 &&
+          outputNode.deviceEndpoint.endpoint === rule.toData.deviceEndpoint.endpoint) {
         return rule;
       }
     }).filter(function(item) {
@@ -565,9 +631,9 @@ var Store = Fluxxor.createStore({
     });
     var cloudRulesList = cloudRules.map(function(rule) {
       if (inputNode.deviceEndpoint.eui64 === rule.fromData.deviceEndpoint.eui64 &&
-           inputNode.deviceEndpoint.endpoint === rule.fromData.deviceEndpoint.endpoint &&
-           outputNode.deviceEndpoint.eui64 === rule.toData.deviceEndpoint.eui64 &&
-           outputNode.deviceEndpoint.endpoint === rule.toData.deviceEndpoint.endpoint) {
+          inputNode.deviceEndpoint.endpoint === rule.fromData.deviceEndpoint.endpoint &&
+          outputNode.deviceEndpoint.eui64 === rule.toData.deviceEndpoint.eui64 &&
+          outputNode.deviceEndpoint.endpoint === rule.toData.deviceEndpoint.endpoint) {
         return rule;
       }
     }).filter(function(item) {
@@ -595,8 +661,8 @@ var Store = Fluxxor.createStore({
     supportedInputNodeList.forEach(function(supportedInputNodeInfo) {
       var supportedOutputNodeInfoForRelayRule = outputNodesList.find(function(outputNodeInfoInLocalList) {
         return outputNodeInfoInLocalList.deviceEndpoint.eui64 === outputNode.deviceEndpoint.eui64 &&
-               outputNodeInfoInLocalList.deviceEndpoint.endpoint === outputNode.deviceEndpoint.endpoint &&
-               outputNodeInfoInLocalList.deviceEndpoint.clusterId === supportedInputNodeInfo.deviceEndpoint.clusterId;
+              outputNodeInfoInLocalList.deviceEndpoint.endpoint === outputNode.deviceEndpoint.endpoint &&
+              outputNodeInfoInLocalList.deviceEndpoint.clusterId === supportedInputNodeInfo.deviceEndpoint.clusterId;
       });
       var supportedOutputNodeInfoForCloudRule = outputNodesList.find(function(outputNodeInfoInLocalList) {
         var isCloudRuleSupported = false;
@@ -608,8 +674,8 @@ var Store = Fluxxor.createStore({
           isCloudRuleSupported = true;
         }
         return outputNodeInfoInLocalList.deviceEndpoint.eui64 === outputNode.deviceEndpoint.eui64 &&
-               outputNodeInfoInLocalList.deviceEndpoint.endpoint === outputNode.deviceEndpoint.endpoint &&
-               isCloudRuleSupported;
+              outputNodeInfoInLocalList.deviceEndpoint.endpoint === outputNode.deviceEndpoint.endpoint &&
+              isCloudRuleSupported;
       });
       if (supportedOutputNodeInfoForRelayRule !== undefined) {
         var rule = {};
@@ -1114,25 +1180,45 @@ var Store = Fluxxor.createStore({
   }
 });
 
-var stores = {
-	store: new Store()
-};
 
-var Flux = new Fluxxor.Flux(stores, ServerActions);
+userInput()
+.then((result) => {
+    console.log("username: ", result.username);
+    console.log("password: ", result.password);
 
-if(Constants.CONSOLE_LOG_ENABLED) {
-	Flux.on("dispatch", function(type, payload) {
-		if (console && console.log) {
-			console.log("[Dispatch]", type, payload);
-		}
-	});
-}
+    // ApiGateway.configClient("https://y6umqallae.execute-api.ap-southeast-1.amazonaws.com/prod");
+    return Auth.signIn(result.username, result.password);
+})
+.then(user => {
 
-Flux.actions.connect("http://localhost:9020", function(){
-  console.log('Connected to SocketIO');
-  Flux.actions.getGatewayState();
-  Flux.actions.getWebserverState();
-  Flux.actions.getOtaFiles();
+  Auth.currentCredentials().then((info) => {
+    Auth.currentUserInfo().then((userInfo) => {
+      const cognitoIdentityId = info._identityId;
+
+      console.log(`cognitoIdentityId: ${cognitoIdentityId}`);
+    });
+  });
+
+  var stores = {
+    store: new Store()
+  };
+
+  var Flux = new Fluxxor.Flux(stores, ServerActions);
+
+  if(Constants.CONSOLE_LOG_ENABLED) {
+    Flux.on("dispatch", function(type, payload) {
+      if (console && console.log) {
+        console.log("[Dispatch]", type, payload);
+      }
+    });
+  }
+
+  Flux.actions.connect("http://localhost:9020", function(){
+    console.log('Connected to SocketIO');
+    Flux.actions.getGatewayState();
+    Flux.actions.getWebserverState();
+    Flux.actions.getOtaFiles();
+  });
+
+  // Flux.actions.enableCliTerminal();
 });
-
-Flux.actions.enableCliTerminal();

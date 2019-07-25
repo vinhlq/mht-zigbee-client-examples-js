@@ -133,6 +133,8 @@ var question =
 1: requestgatewaystate
 2: permitjoinZB3OpenNetworkOnly
 3: getwebserverinfo
+4: getotafiles
+5: addrelay
 e: exit
 `;
 async function userInputNumber() {
@@ -158,6 +160,9 @@ async function userInputNumber() {
           socket.emit('servermessage', {type:"getwebserverinfo"});
           break;
         case '4':
+          socket.emit('servermessage', {type:"getotafiles"});
+          break;
+        case '5':
           socket.emit('action', {type:"addrelay", inDeviceInfo: inDeviceInfo, outDeviceInfo: outDeviceInfo});
           break;
         case 'x':

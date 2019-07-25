@@ -5,9 +5,21 @@ var CircularBuffer = require('circular-buffer');
 // var ServerActions = projRequire('../../').ServerActionsSocketIO;
 var Constants = require('mht-zigbee-client').Constants;
 var ServerActions = require('mht-zigbee-client').ServerActionsSocketIO;
+var lights = require('./DeviceConstants').lights;
+var switches = require('./DeviceConstants').switches;
+var sensors = require('./DeviceConstants').sensors;
+var smartplugs = require('./DeviceConstants').smartplugs;
+var nodestate = require('./DeviceConstants').nodestate;
 var nodeListBindableClusters = require('./DeviceConstants').nodeListBindableClusters;
+var supportedBindingInCloudRules = require('./DeviceConstants').supportedBindingInCloudRules;
 var Fluxxor       = require('fluxxor');
 var readline = require('./utils/readline');
+
+var tagPrint = require('./utils/tagprint');
+var Reset = tagPrint.Reset;
+var FgGreen = tagPrint.FgGreen;
+var FgRed = tagPrint.FgRed;
+tagPrint = tagPrint.print;
 
 var Store = Fluxxor.createStore({
   initialize: function() {
@@ -1141,11 +1153,43 @@ Flux.actions.connect(ServerActions.name, "http://localhost:9020", function(){
 
 Flux.actions.enableCliTerminal();
 
+function createRule(inputNode, outputNode) {
+  if (Flux.stores.store.isGroup(outputNode)) {
+    Flux.actions.createGroupRule('', inputNode.deviceTableIndex,
+                                 outputNode.itemList);
+  } else {
+    if (!Flux.stores.store.isExistingRuleDetected(inputNode,
+                                                  outputNode,
+                                                  Flux.stores.store.rules) &&
+        !Flux.stores.store.isExistingRuleDetected(inputNode,
+                                                  outputNode,
+                                                  Flux.stores.store.cloudRules)) {
+      var rulesList = Flux.stores.store.filterRulesListForCreation(inputNode,
+                                                                   outputNode);
+
+      if (inputNode.supportsRelay) {
+        rulesList.forEach(function(rule) {
+          Flux.stores.store.addRule(rule.inputNodeInfoInRule, rule.outputNodeInfoInRule);
+          Flux.actions.createRule('', rule.inputNodeInfoInRule, rule.outputNodeInfoInRule);
+        });
+      } else {
+        rulesList.forEach(function(rule) {
+          Flux.stores.store.addCloudRule(rule.inputNodeInfoInRule, rule.outputNodeInfoInRule);
+          Flux.actions.createCloudRule('', rule.inputNodeInfoInRule, rule.outputNodeInfoInRule);
+        });
+      }
+    }
+  }
+}
+
 var question =
 `Enter number:
 1: requestgatewaystate
 2: permitjoinZB3OpenNetworkOnly
 3: getwebserverinfo
+4: getOtaFiles
+5: otaCopyFile
+9: createRule
 e: exit
 `;
 async function userInputNumber() {
@@ -1153,35 +1197,89 @@ async function userInputNumber() {
   return number;
 }
 
-(async () => {
-  try {
-    for(let exit=false;!exit;) {
-      const number = await userInputNumber();
+async function userShell() {
+  var args =  await userInputNumber()
+  args = args.split(' ');
+    // console.info(`Value: ${number}`);
+  switch(args[0]) {
+    case '1':
+      Flux.actions.getGatewayState('');
+      break;
+    case '2':
+      Flux.actions.gatewayPermitJoiningZB3OpenNetworkOnly('', 255);
+      break;
+    case '3':
+      Flux.actions.getWebserverState('');
+      break;
+    case '4':
+      Flux.actions.getOtaFiles('');
+      break;
+    case '5':
+      args[1] = args[1] || 'ota'
+      Flux.actions.otaCopyFile('', {filename: 'ota'});
+      break;
+    case '9':
+      Flux.actions.createRule('', inDeviceInfo, outDeviceInfo);
+      break;
 
-      // console.info(`Value: ${number}`);
-      switch(number) {
-        case '1':
-          Flux.actions.getGatewayState('');
-          break;
-        case '2':
-          Flux.actions.gatewayPermitJoiningZB3OpenNetworkOnly('', 255);
-          break;
-        case '3':
-          Flux.actions.getWebserverState('');
-          break;
-        case '4':
-          Flux.actions.createRule('', inDeviceInfo, outDeviceInfo);
-          break;
-        case 'x':
-          // socket.emit('action', {type:"permitjoinZB3", deviceEui: deviceEui, installCode: installCode, delayMs: delayMs});
-          break;
-        case 'e':
-          socket.close();
-          exit = true;
-          break;
+    case 'list':
+      Flux.actions.getGatewayState('');
+      for(d of Flux.stores.store.devices) {
+        tagPrint(d, `devices-${m.nodeId}`, FgGreen);
       }
-    }
-  } catch (e) {
-    throw e
+      break;
+
+    case 'rule':
+      tagPrint(Flux.stores.store.rules, 'rules', FgGreen);
+      
+      if(args.length < 2)
+        break;
+      switch(args[1]) {
+        case 'add':
+          Flux.actions.getGatewayState('');
+          var inputNodes=Flux.stores.store.getInputNodes()
+          var outputNodes=Flux.stores.store.getOutputNodes()
+
+          let inode;
+          while(true)
+          {
+            for(var i = 0; i < inputNodes.length; i++) {
+              console.log(`${i}: devices-${inputNodes[i].deviceEndpoint.eui64}-${inputNodes[i].deviceEndpoint.endpoint}`);
+            }
+            var index = parseInt(await readline('Select: '));
+            if(index >= 0 && index < inputNodes.length) {
+              inode = inputNodes[index];
+              break;
+            }
+          }
+
+          let onode;
+          while(true)
+          {
+            for(var i = 0; i < outputNodes.length; i++) {
+              console.log(`${i}: devices-${outputNodes[i].deviceEndpoint.eui64}-${outputNodes[i].deviceEndpoint.endpoint}`);
+            }
+            var index = parseInt(await readline('Select: '));
+            if(index >= 0 && index < outputNodes.length) {
+              onode = outputNodes[index];
+              break;
+            }
+          }
+
+          createRule(inode, onode);
+          break;
+        }
+      
+      break;
+
+    case 'x':
+      // socket.emit('action', {type:"permitjoinZB3", deviceEui: deviceEui, installCode: installCode, delayMs: delayMs});
+      break;
+    case 'e':
+      // Flux.actions.close();
+      process.exit();
+      return;
+  }
+  process.nextTick(userShell);
 }
-})();
+userShell();

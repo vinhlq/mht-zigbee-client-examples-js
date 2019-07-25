@@ -76,7 +76,7 @@ function Login(username, password) {
             resolve(credentialSubset);
           });
         });
-        resolve(result);
+        // resolve(result);
       },
 
       onFailure: function(err) {
@@ -154,22 +154,22 @@ var Store = Fluxxor.createStore({
     this.bindActions(
       Constants.DEVICE_LIST_UPDATED, this.onDeviceListUpdated,
       Constants.RULES_LIST_UPDATED, this.onRulesListUpdated,
-      // Constants.DEVICE_JOINED, this.onDeviceJoined,
-      // Constants.DEVICE_LEFT, this.onDeviceLeft,
-      // Constants.DEVICE_UPDATE, this.onDeviceUpdate,
-      // Constants.SERVER_SETTINGS, this.onServerSettings,
-      // Constants.GATEWAY_SETTINGS, this.onGatewaySettings,
-      // Constants.OTA_EVENTS, this.onOtaEventUpdate,
-      // Constants.OTA_AVAILABLE_FILES, this.otaFilesReceived,
-      // Constants.SERVER_LOG, this.loadServerLog,
-      // Constants.GATEWAY_LOG, this.loadGatewayLog,
-      // Constants.TRAFFIC_TEST_LOG, this.loadTrafficTestLog,
-      // Constants.TRAFFIC_TEST_RESULTS, this.onTrafficTestResults,
+      Constants.DEVICE_JOINED, this.onDeviceJoined,
+      Constants.DEVICE_LEFT, this.onDeviceLeft,
+      Constants.DEVICE_UPDATE, this.onDeviceUpdate,
+      Constants.SERVER_SETTINGS, this.onServerSettings,
+      Constants.GATEWAY_SETTINGS, this.onGatewaySettings,
+      Constants.OTA_EVENTS, this.onOtaEventUpdate,
+      Constants.OTA_AVAILABLE_FILES, this.otaFilesReceived,
+      Constants.SERVER_LOG, this.loadServerLog,
+      Constants.GATEWAY_LOG, this.loadGatewayLog,
+      Constants.TRAFFIC_TEST_LOG, this.loadTrafficTestLog,
+      Constants.TRAFFIC_TEST_RESULTS, this.onTrafficTestResults,
       Constants.HEARTBEAT, this.onHeartbeat,
-      // Constants.NETWORK_SECURITY_LEVEL, this.onNetworkSecurityLevel,
-      // Constants.SERVER_LOG_STREAM, this.updateServerLogStream,
-      // Constants.GATEWAY_LOG_STREAM, this.updateGatewayLogStream,
-      // Constants.INSTALL_COLLECTION, this.updateInstallCodeFromServer
+      Constants.NETWORK_SECURITY_LEVEL, this.onNetworkSecurityLevel,
+      Constants.SERVER_LOG_STREAM, this.updateServerLogStream,
+      Constants.GATEWAY_LOG_STREAM, this.updateGatewayLogStream,
+      Constants.INSTALL_COLLECTION, this.updateInstallCodeFromServer
     );
   },
 
@@ -1253,7 +1253,8 @@ userInput()
     secretAccessKey: AWS.config.credentials.secretAccessKey,
     sessionToken: AWS.config.credentials.sessionToken,
     provider: process.env.AWS_IOT_PROVIDER,
-    gatewayEui: "000B57FFFE51B5A5"
+    // gatewayEui: "000B57FFFE51B5A5"
+    gatewayEui: "000B57FFFE44457A"
   }
   Flux.actions.connect(ServerActions.name, options, function(){
     console.log('Connected to AwsIot');
@@ -1262,13 +1263,13 @@ userInput()
     Flux.actions.getOtaFiles();
   });
 
-  options = "http://localhost:9020";
-  Flux.actions.connect('socket-io', options, function(){
-    console.log('Connected to SocketIO');
-    Flux.actions.getGatewayState();
-    Flux.actions.getWebserverState();
-    Flux.actions.getOtaFiles();
-  });
+  // options = "http://localhost:9020";
+  // Flux.actions.connect('socket-io', options, function(){
+  //   console.log('Connected to SocketIO');
+  //   Flux.actions.getGatewayState();
+  //   Flux.actions.getWebserverState();
+  //   Flux.actions.getOtaFiles();
+  // });
 
   // Flux.actions.enableCliTerminal();
 
@@ -1310,5 +1311,5 @@ userInput()
     }
     process.nextTick(userShell);
   }
-  userShell()
+  userShell();
 });

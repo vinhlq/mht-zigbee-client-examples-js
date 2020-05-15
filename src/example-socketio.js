@@ -1227,7 +1227,7 @@ async function userInputNumber() {
   return number;
 }
 
-async function userShell(eui64) {
+async function userShell(eui64, endpoint) {
   // var args =  await userInputNumber();
   var args = await readline(question1);
   args = args.split(' ');
@@ -1255,7 +1255,7 @@ async function userShell(eui64) {
       break;
 
     case 'on': {
-        const endpoint = await readline('endpoint: ');
+        if(!endpoint) const endpoint = await readline('endpoint: ');
         console.log(`Set: device: ${eui64}-${endpoint}: on`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
         Flux.actions.setDeviceOn('socket-io', node);
@@ -1263,7 +1263,7 @@ async function userShell(eui64) {
       break;
 
     case 'off': {
-        const endpoint = await readline('endpoint: ');
+        if(!endpoint) const endpoint = await readline('endpoint: ');
         console.log(`Set: device: ${eui64}-${endpoint}: off`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
         Flux.actions.setDeviceOff('socket-io', node);
@@ -1271,7 +1271,6 @@ async function userShell(eui64) {
       break;
 
     case 'lb': {
-        const endpoint = await readline('endpoint: ');
         const level = await readline('level: ');
         console.log(`Set: device: ${eui64}-${endpoint}, level/brightness: ${level}`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
@@ -1280,7 +1279,7 @@ async function userShell(eui64) {
       break;
 
     case 'lt': {
-        const endpoint = await readline('endpoint: ');
+        if(!endpoint) const endpoint = await readline('endpoint: ');
         const temp = await readline('level: ');
         console.log(`Set: device: ${eui64}-${endpoint}, color temperature: ${temp}`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
@@ -1289,7 +1288,7 @@ async function userShell(eui64) {
       break;
 
     case 'lc': {
-        const endpoint = await readline('endpoint: ');
+        if(!endpoint) const endpoint = await readline('endpoint: ');
         const hue = await readline('hue: ');
         const sat = await readline('sat: ');
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
@@ -1360,10 +1359,11 @@ async function userShell(eui64) {
 }
 async function userMain() {
   await socketIoConnect(server);
-  var eui64 = await readline('eui64:');
+  const eui64 = await readline('eui64:');
+  const endpoint = await readline('endpoint: ');
   
   while(true) {
-    var exit = await userShell(eui64);
+    var exit = await userShell(eui64, endpoint);
     if(exit) break;
   }
   process.exit();

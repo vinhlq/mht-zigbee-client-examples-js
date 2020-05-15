@@ -1355,7 +1355,7 @@ async function userShell(eui64) {
       process.exit();
       return;
   }
-  process.nextTick(userShell.call(eui64));
+  process.nextTick(userShell.bind(eui64));
 }
 async function userMain() {
   await socketIoConnect(server);

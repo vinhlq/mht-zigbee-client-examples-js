@@ -1231,6 +1231,7 @@ async function userShell(eui64) {
   // var args =  await userInputNumber();
   var args = await readline(question1);
   args = args.split(' ');
+  var exit = false;
     // console.info(`Value: ${number}`);
   switch(args[0]) {
     case '1':
@@ -1352,14 +1353,19 @@ async function userShell(eui64) {
       break;
     case 'q':
       // Flux.actions.close();
-      process.exit();
-      return;
+      exit = true;
+      break;
   }
-  process.nextTick(userShell.bind(eui64));
+  return exit;
 }
 async function userMain() {
   await socketIoConnect(server);
   var eui64 = await readline('eui64:');
-  userShell(eui64);
+  
+  while(true) {
+    var exit = await userShell(eui64);
+    if(exit) break;
+  }
+  process.exit();
 }
 userMain();

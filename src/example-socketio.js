@@ -1144,15 +1144,6 @@ if(Constants.CONSOLE_LOG_ENABLED) {
 	});
 }
 
-Flux.actions.connect(ServerActions.name, "http://localhost:9020", function(){
-  console.log('Connected to SocketIO');
-  Flux.actions.getGatewayState();
-  Flux.actions.getWebserverState();
-  Flux.actions.getOtaFiles();
-});
-
-Flux.actions.enableCliTerminal();
-
 function createRule(inputNode, outputNode) {
   if (Flux.stores.store.isGroup(outputNode)) {
     Flux.actions.createGroupRule('', inputNode.deviceTableIndex,
@@ -1182,6 +1173,32 @@ function createRule(inputNode, outputNode) {
   }
 }
 
+var host = "192.168.2.169";
+var port = 9020;
+if(process.argv[2]) {
+  host = process.argv[2];
+}
+
+if(process.argv[3]) {
+  port = process.argv[3];
+}
+var server = `http://${host}:${port}`;
+
+
+function socketIoConnect(server) {
+  return new Promise((resolve) => {
+    console.log(`Conneting to: ${server}`)
+    Flux.actions.connect(ServerActions.name, server, function(){
+      console.log('Connected to SocketIO');
+      Flux.actions.getGatewayState();
+      Flux.actions.getWebserverState();
+      Flux.actions.getOtaFiles();
+      resolve();
+    });
+    Flux.actions.enableCliTerminal();
+  });
+}
+
 var question =
 `Enter number:
 1: requestgatewaystate
@@ -1192,13 +1209,27 @@ var question =
 9: createRule
 e: exit
 `;
+
+var question1 =
+`
+ls: list device
+on: device on
+off: device off
+lc: hue, sat
+lb: brightness
+lt: color temp
+lv: level
+q: quit
+`
+
 async function userInputNumber() {
   const number = await readline(question);
   return number;
 }
 
-async function userShell() {
-  var args =  await userInputNumber()
+async function userShell(eui64) {
+  // var args =  await userInputNumber();
+  var args = await readline(question1);
   args = args.split(' ');
     // console.info(`Value: ${number}`);
   switch(args[0]) {
@@ -1222,10 +1253,54 @@ async function userShell() {
       Flux.actions.createRule('', inDeviceInfo, outDeviceInfo);
       break;
 
-    case 'list':
+    case 'on': {
+        const endpoint = await readline('endpoint: ');
+        console.log(`Set: device: ${eui64}-${endpoint}: on`);
+        const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
+        Flux.actions.setDeviceOn('', node);
+      }
+      break;
+
+    case 'off': {
+        const endpoint = await readline('endpoint: ');
+        console.log(`Set: device: ${eui64}-${endpoint}: off`);
+        const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
+        Flux.actions.setDeviceOff('', node);
+      }
+      break;
+
+    case 'lb': {
+        const endpoint = await readline('endpoint: ');
+        const level = await readline('level: ');
+        console.log(`Set: device: ${eui64}-${endpoint}, level/brightness: ${level}`);
+        const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
+        Flux.actions.setLightLevel('', level, node);
+      }
+      break;
+
+    case 'lt': {
+        const endpoint = await readline('endpoint: ');
+        const temp = await readline('level: ');
+        console.log(`Set: device: ${eui64}-${endpoint}, color temperature: ${temp}`);
+        const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
+        Flux.actions.setLightTemp('', temp, node);
+      }
+      break;
+
+    case 'lc': {
+        const endpoint = await readline('endpoint: ');
+        const hue = await readline('hue: ');
+        const sat = await readline('sat: ');
+        const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
+        console.log(`Set: device: ${eui64}-${endpoint}, hue: ${hue}, sat: ${sat}`);
+        Flux.actions.setLightColor('', hue, sat, node);
+      }
+      break;
+
+    case 'ls':
       Flux.actions.getGatewayState('');
       for(d of Flux.stores.store.devices) {
-        tagPrint(d, `devices-${m.nodeId}`, FgGreen);
+        tagPrint(d, `devices-${d.nodeId}`, FgGreen);
       }
       break;
 
@@ -1275,11 +1350,16 @@ async function userShell() {
     case 'x':
       // socket.emit('action', {type:"permitjoinZB3", deviceEui: deviceEui, installCode: installCode, delayMs: delayMs});
       break;
-    case 'e':
+    case 'q':
       // Flux.actions.close();
       process.exit();
       return;
   }
   process.nextTick(userShell);
 }
-userShell();
+async function userMain() {
+  await socketIoConnect(server);
+  var eui64 = await readline('eui64:');
+  userShell(eui64);
+}
+userMain();

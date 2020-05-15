@@ -1255,12 +1255,14 @@ userInput()
     provider: process.env.AWS_IOT_PROVIDER,
     // gatewayEui: "000B57FFFE51B5A5"
     gatewayEui: "000B57FFFE44457A"
+    // gatewayEui: "840D8EB2B0C2"
   }
   Flux.actions.connect(ServerActions.name, options, function(){
     console.log('Connected to AwsIot');
     Flux.actions.getGatewayState();
     Flux.actions.getWebserverState();
     Flux.actions.getOtaFiles();
+    Flux.actions.setDeviceToggle('', {data: {deviceType:"0x0210", deviceEndpoint: {endpoint: 1}}});
   });
 
   // options = "http://localhost:9020";
@@ -1278,6 +1280,7 @@ userInput()
   1: requestgatewaystate
   2: permitjoinZB3OpenNetworkOnly
   3: getwebserverinfo
+  4: lighttoggle
   e: exit
   `;
   async function userInputNumber() {
@@ -1299,7 +1302,22 @@ userInput()
         Flux.actions.getWebserverState('');
         break;
       case '4':
-        Flux.actions.createRule('', inDeviceInfo, outDeviceInfo);
+        Flux.actions.setDeviceToggle('', {data: {deviceType:"0x0210", deviceEndpoint: {endpoint: 1}}});
+        break;
+      case '5':
+        Flux.actions.setLightLevel('', 124, {data: {deviceType:"0x0210", deviceEndpoint: {endpoint: 1}}});
+        break;
+      case '6':
+        Flux.actions.setLightTemp('', 100, {data: {deviceType:"0x0210", deviceEndpoint: {endpoint: 1}}});
+        break;
+      case '7':
+        Flux.actions.setLightColor('', 100, 200, {data: {deviceType:"0x0210", deviceEndpoint: {endpoint: 1}}});
+        break;
+      case '8':
+        Flux.actions.gatewayUpgradePolicy(true);
+        break;
+      case '9':
+        Flux.actions.gatewayUpgradePolicy(false);
         break;
       case 'x':
         // socket.emit('action', {type:"permitjoinZB3", deviceEui: deviceEui, installCode: installCode, delayMs: delayMs});

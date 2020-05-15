@@ -1,6 +1,7 @@
 var io = require('socket.io-client');
 var readline = require('./utils/readline');
-var socket = io.connect("http://localhost:9020");
+// var socket = io.connect("http://localhost:9020");
+var socket = io.connect("http://192.168.70.13:9020");
 var tagPrint = require('./utils/tagprint');
 
 var Reset = tagPrint.Reset;
@@ -135,6 +136,7 @@ var question =
 3: getwebserverinfo
 4: getotafiles
 5: addrelay
+6: requestattribute
 e: exit
 `;
 async function userInputNumber() {
@@ -164,6 +166,9 @@ async function userInputNumber() {
           break;
         case '5':
           socket.emit('action', {type:"addrelay", inDeviceInfo: inDeviceInfo, outDeviceInfo: outDeviceInfo});
+          break;
+        case '6':
+          socket.emit('action', {type:"requestattribute", deviceEndpoint: {eui64: "0x00158D0003553CE5", endpoint: 1}, attributeString: 'onOff'})
           break;
         case 'x':
           // socket.emit('action', {type:"permitjoinZB3", deviceEui: deviceEui, installCode: installCode, delayMs: delayMs});

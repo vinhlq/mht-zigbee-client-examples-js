@@ -1257,7 +1257,7 @@ async function userShell(eui64) {
         const endpoint = await readline('endpoint: ');
         console.log(`Set: device: ${eui64}-${endpoint}: on`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
-        Flux.actions.setDeviceOn('', node);
+        Flux.actions.setDeviceOn('socket-io', node);
       }
       break;
 
@@ -1265,7 +1265,7 @@ async function userShell(eui64) {
         const endpoint = await readline('endpoint: ');
         console.log(`Set: device: ${eui64}-${endpoint}: off`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
-        Flux.actions.setDeviceOff('', node);
+        Flux.actions.setDeviceOff('socket-io', node);
       }
       break;
 
@@ -1274,7 +1274,7 @@ async function userShell(eui64) {
         const level = await readline('level: ');
         console.log(`Set: device: ${eui64}-${endpoint}, level/brightness: ${level}`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
-        Flux.actions.setLightLevel('', level, node);
+        Flux.actions.setLightLevel('socket-io', level, node);
       }
       break;
 
@@ -1283,7 +1283,7 @@ async function userShell(eui64) {
         const temp = await readline('level: ');
         console.log(`Set: device: ${eui64}-${endpoint}, color temperature: ${temp}`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
-        Flux.actions.setLightTemp('', temp, node);
+        Flux.actions.setLightTemp('socket-io', temp, node);
       }
       break;
 
@@ -1293,7 +1293,7 @@ async function userShell(eui64) {
         const sat = await readline('sat: ');
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
         console.log(`Set: device: ${eui64}-${endpoint}, hue: ${hue}, sat: ${sat}`);
-        Flux.actions.setLightColor('', hue, sat, node);
+        Flux.actions.setLightColor('socket-io', hue, sat, node);
       }
       break;
 
@@ -1355,7 +1355,7 @@ async function userShell(eui64) {
       process.exit();
       return;
   }
-  process.nextTick(userShell);
+  process.nextTick(userShell.call(eui64));
 }
 async function userMain() {
   await socketIoConnect(server);

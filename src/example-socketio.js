@@ -1255,7 +1255,7 @@ async function userShell(eui64, endpoint) {
       break;
 
     case 'on': {
-        if(!endpoint) const endpoint = await readline('endpoint: ');
+        if(!endpoint) endpoint = await readline('endpoint: ');
         console.log(`Set: device: ${eui64}-${endpoint}: on`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
         Flux.actions.setDeviceOn('socket-io', node);
@@ -1263,7 +1263,7 @@ async function userShell(eui64, endpoint) {
       break;
 
     case 'off': {
-        if(!endpoint) const endpoint = await readline('endpoint: ');
+        if(!endpoint) endpoint = await readline('endpoint: ');
         console.log(`Set: device: ${eui64}-${endpoint}: off`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
         Flux.actions.setDeviceOff('socket-io', node);
@@ -1271,6 +1271,7 @@ async function userShell(eui64, endpoint) {
       break;
 
     case 'lb': {
+        if(!endpoint) endpoint = await readline('endpoint: ');
         const level = await readline('level: ');
         console.log(`Set: device: ${eui64}-${endpoint}, level/brightness: ${level}`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
@@ -1279,7 +1280,7 @@ async function userShell(eui64, endpoint) {
       break;
 
     case 'lt': {
-        if(!endpoint) const endpoint = await readline('endpoint: ');
+        if(!endpoint) endpoint = await readline('endpoint: ');
         const temp = await readline('level: ');
         console.log(`Set: device: ${eui64}-${endpoint}, color temperature: ${temp}`);
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};
@@ -1288,7 +1289,7 @@ async function userShell(eui64, endpoint) {
       break;
 
     case 'lc': {
-        if(!endpoint) const endpoint = await readline('endpoint: ');
+        if(!endpoint) endpoint = await readline('endpoint: ');
         const hue = await readline('hue: ');
         const sat = await readline('sat: ');
         const node = {data: {deviceEndpoint: {eui64: eui64, endpoint: endpoint}}};

@@ -23,7 +23,7 @@
         "body-parser": "^1.19.0",
         "fluxxor": "^1.7.3",
         "mht-zigbee-client": "latest",
-        "socket.io": "^2.2.0",
+        "socket.io": "^2.4.0",
         "socket.io-client": "^2.2.0",
         "ws": "^7.0.0",
         "node-fetch": "^2.5.0",

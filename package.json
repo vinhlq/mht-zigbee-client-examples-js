@@ -25,7 +25,7 @@
         "mht-zigbee-client": "latest",
         "socket.io": "^2.2.0",
         "socket.io-client": "^2.2.0",
-        "ws": "^7.0.0",
+        "ws": "^7.4.6",
         "node-fetch": "^2.5.0",
         "coap": "^0.23.1",
         "aws-iot-device-sdk": "^2.2.1"

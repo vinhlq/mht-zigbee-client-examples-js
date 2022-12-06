@@ -20,7 +20,7 @@
         "lodash": "^3.10.1",
         "loglevel": "^1.6.1",
         "@babel/runtime": "^7.4.3",
-        "body-parser": "^1.19.0",
+        "body-parser": "^1.20.1",
         "fluxxor": "^1.7.3",
         "mht-zigbee-client": "latest",
         "socket.io": "^2.2.0",
